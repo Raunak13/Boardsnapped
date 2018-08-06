@@ -48,8 +48,8 @@ def getmodel():
 
 
 # def main():
-x_folder='../data/separated/';
-y_folder='../data/annotated/';
+x_folder='../../data/separated/';
+y_folder='../../data/annotated/';
 print("loading data");
 x_data,y_data,x_paths=load_data(x_folder,y_folder,21,25);
 print("data loaded");
