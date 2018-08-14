@@ -5,11 +5,13 @@ import cv2
 import math
 import os
 import keras
+from keras.utils import generic_utils
 from keras.models import Sequential, Model
 from keras.layers import Input, Dense, Conv2D, Conv3D, TimeDistributed, Dropout, Flatten, MaxPooling2D, MaxPool3D, Reshape, LSTM, Bidirectional
 from keras import regularizers
 import h5py
 from keras.optimizers import Adam
+from sklearn.metrics import classification_report
 
 def load_data(x_folder,y_folder,start,end):
 	x_data=[];
@@ -94,10 +96,10 @@ else:
     print("Please install GPU version of TF")
 
 
-x_folder='renamed/';
-y_folder='annotated/';
+x_folder='../../data/renamed/';
+y_folder='../../data/labels/';
 print("loading data");
-x_data,y_data,x_paths=load_data(x_folder,y_folder,21,50);
+x_data,y_data,x_paths=load_data(x_folder,y_folder,31,32);
 print("data loaded");
 print(x_data.shape);
 print(y_data.shape);
@@ -135,21 +137,23 @@ for e in range(n_epochs):
 		# print("epoch = "+str(e)+" batch = "+str(b)+" loss: "+str(train_loss[e,b]))
 
 
-lrcn.save('lstm.h5');
-lrcn.save_weights('lstm_weights.h5')
+lrcn.save('../outputs/lstm.h5');
+lrcn.save_weights('../outputs/lstm_weights.h5')
 
-lrcn.load_weights('lstm1_weights.h5')
+# lrcn.load_weights('..outputs/lstm1_weights.h5')
 
-x_t,y_t,x_tpaths=load_data(x_folder,y_folder,1,1);
-x_test,y_test,y_sample_wt=format_train_data(x_t,y_t,timestep);
-
-
-y_pred=lrcn.predict(x_test,batch_size=4);
-y_form=revert(y_pred,timestep);
-y_target-y_t[0:len(y_form)]
-tosave=np.append(y_target,y_pred,axis=1);
-print(y_pred);
-# np.savetxt('ysave.csv',tosave,delimiter=',',fmt='%.6f')
+for j in range(1,2):
+	x_t,y_t,x_tpaths=load_data(x_folder,y_folder,j,j);
+	x_test,y_test,y_sample_wt=format_train_data(x_t,y_t,timestep);
+	y_pred=lrcn.predict(x_test,batch_size=4);
+	y_form=np.reshape(revert(y_pred,timestep)(-1,1));
+	y_target=y_t[0:len(y_form)]
+	tosave=np.append(y_target,y_form,axis=1);
+	y_p=((y_form>0.5)*1);
+	target_names = ['non_key', 'key']
+	print(classification_report(y_target, y_p, target_names=target_names));
+	# print(y_pred);
+	np.savetxt(('../outputs/'+str(j)+'ysave.csv'),tosave,delimiter=',',fmt='%.6f')
 
 
 
